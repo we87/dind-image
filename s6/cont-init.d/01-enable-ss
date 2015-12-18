@@ -1,0 +1,6 @@
+#!/usr/bin/with-contenv /bin/bash
+
+if [[ -z "${SS_SERVER}" ]] || [[ -z "${SS_PORT}" ]] || [[ -z "${SS_METHOD}" ]] || [[ -z "${SS_PASSWORD}" ]]; then
+	echo "disable ss => SS_SERVER(${SS_SERVER}), SS_PORT(${SS_PORT}), SS_METHOD(${SS_METHOD}) and SS_PASSWORD(${SS_PASSWORD})"
+	rm -rf /etc/services.d/ss
+fi

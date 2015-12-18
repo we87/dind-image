@@ -1,8 +1,0 @@
-#!/usr/bin/with-contenv /bin/bash
-
-if [[ -z "${USER}" ]] || [[ -z "${SERVER}" ]] || [[ -z "${PASSWORD}" ]]; then
-	echo 'USER, SERVER and PASSWORD must not be empty'
-	exit 21
-fi
-
-echo "${PASSWORD}" | openconnect -u ${USER} ${SERVER} --no-cert-check

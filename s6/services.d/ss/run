@@ -1,0 +1,48 @@
+#!/usr/bin/with-contenv /bin/bash
+
+set -e
+
+if [[ -z "${SS_SERVER}" ]] || [[ -z "${SS_PORT}" ]] || [[ -z "${SS_METHOD}" ]] || [[ -z "${SS_PASSWORD}" ]]; then
+	echo "SS_SERVER(${SS_SERVER}), SS_PORT(${SS_PORT}), SS_METHOD(${SS_METHOD}) and SS_PASSWORD(${SS_PASSWORD}) must not be empty"
+	exit 21
+fi
+
+clean-up() {
+    echo "clear old iptables rules"
+    iptables -t nat -F SOCKS || true
+}
+
+clean-up
+
+trap clean-up EXIT INT TERM
+
+echo "apply iptables rules"
+
+######################################################
+# copied from http://www.jianshu.com/p/f688cdfa6947  #
+######################################################
+
+#创建一个叫SOCKS的链
+iptables -t nat -N SOCKS || true
+
+#忽略服务器的地址,如果不属于内网IP的话一定要注意加上.
+iptables -t nat -A SOCKS -d ${SS_SERVER} -j RETURN
+
+# 忽略本地地址
+iptables -t nat -A SOCKS -d 0.0.0.0/8 -j RETURN
+iptables -t nat -A SOCKS -d 10.0.0.0/8 -j RETURN
+iptables -t nat -A SOCKS -d 127.0.0.0/8 -j RETURN
+iptables -t nat -A SOCKS -d 169.254.0.0/16 -j RETURN
+iptables -t nat -A SOCKS -d 172.16.0.0/12 -j RETURN
+iptables -t nat -A SOCKS -d 192.168.0.0/16 -j RETURN
+iptables -t nat -A SOCKS -d 224.0.0.0/4 -j RETURN
+iptables -t nat -A SOCKS -d 240.0.0.0/4 -j RETURN
+
+#除上面之外的所有流量都跳转到socks的本地端口(local_port),这里使用shadosock默认端口1080
+iptables -t nat -A SOCKS -p tcp -j REDIRECT --to-ports 1080
+
+# 最后是应用上面的规则,将OUTPUT出去的tcp流量全部经过SOCKS链
+iptables -t nat -A OUTPUT -p tcp -j SOCKS
+
+echo "start ss-redir"
+exec /usr/local/bin/ss-redir -s ${SS_SERVER} -p ${SS_PORT} -m ${SS_METHOD} -k ${SS_PASSWORD} -l 1080
