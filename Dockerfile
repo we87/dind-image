@@ -27,7 +27,7 @@ RUN apt-get update \
 
 # add services
 COPY s6 /etc/
-COPY ss /etc/
+COPY ss /etc/ss/
 COPY run.sh /run.sh
 
 ENTRYPOINT ["/run.sh"]
