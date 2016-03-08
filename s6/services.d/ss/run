@@ -40,6 +40,13 @@ iptables -t nat -A SOCKS -d 240.0.0.0/4 -j RETURN
 # for aliyun LSB
 iptables -t nat -A SOCKS -d 100.64.0.0/10 -j RETURN
 
+# ignore ip in china
+# http://www.q2zy.com/articles/2015/11/04/router-configuration-3/
+ipset destroy china_list
+ipset -N china_list nethash
+iptables -t nat -A SHADOWSOCKS -m set --match-set china_list dst -j RETURN
+eval /etc/ss/chian_ip.txt
+
 #除上面之外的所有流量都跳转到socks的本地端口(local_port),这里使用shadosock默认端口1080
 iptables -t nat -A SOCKS -p tcp -j REDIRECT --to-ports 1080
 

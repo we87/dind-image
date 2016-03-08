@@ -14,7 +14,7 @@ ENV SS_DIR shadowsocks-libev-$SS_VER
 ENV SS_DEP git-core build-essential autoconf libtool libssl-dev
 
 RUN apt-get update \
-    && apt-get install -y $SS_DEP curl iptables \
+    && apt-get install -y $SS_DEP curl iptables ipset \
     && cd /tmp \
     && curl -sSL $SS_URL | tar xz \
     && cd $SS_DIR \
@@ -27,6 +27,7 @@ RUN apt-get update \
 
 # add services
 COPY s6 /etc/
+COPY ss /etc/
 COPY run.sh /run.sh
 
 ENTRYPOINT ["/run.sh"]
