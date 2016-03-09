@@ -1,3 +1,9 @@
 #!/usr/bin/execlineb -S1
 if { s6-test ${1} -eq 21 }
 s6-svscanctl -t /var/run/s6/services
+
+echo "exiting clear settings"
+iptables -t nat -F SOCKS 2>/dev/null || true
+iptables -t nat -D OUTPUT -p tcp -j SOCKS 2>/dev/null || true
+iptables -t nat -D PREROUTING -p tcp -j SOCKS 2>/dev/null || true
+ipset destroy china_list 2>/dev/null || true
